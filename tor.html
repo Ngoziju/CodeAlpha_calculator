@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>APP</title>
+    <style>
+    :root {
+    --cream: #F5EFE3;
+    --warm-white: #FAF7F2;
+    --amber: #C8893A;
+    --amber-light: #E5A94E;
+    --amber-dim: #a06c28;
+    --rust: #8B3A2A;
+    --ink: #1C1410;
+    --ink-light: #4A3728;
+    --shadow-warm: rgba(30, 18, 8, 0.18);
+    --shadow-deep: rgba(30, 18, 8, 0.35);
+  }
+    html, body {
+    height: 100%;
+    background: var(--ink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'DM Mono', monospace;
+    cursor: none;
+    overflow: hidden;
+  }
+  /* Custom cursor */
+  .cursor {
+    position: fixed;
+    width: 10px; height: 10px;
+    background: var(--amber);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+    transform: translate(-50%, -50%);
+    transition: transform 0.1s ease, background 0.2s;
+    mix-blend-mode: screen;
+  }
+   /* Background texture */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background:
+      radial-gradient(ellipse 80% 80% at 20% 30%, rgba(200, 137, 58, 0.06) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 60% at 80% 70%, rgba(139, 58, 42, 0.06) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    animation: rise 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(30px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  /* Label */
+  .label {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 11px;
+    font-weight: 300;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--amber);
+    opacity: 0.7;
+  }
+  /* Body */
+  .calc {
+    width: 320px;
+    background: var(--cream);
+    border-radius: 24px;
+    padding: 24px 20px 20px;
+    box-shadow:
+    0 2px 0 rgba(255,255,255,0.04) inset,
+    0 40px 80px var(--shadow-deep),
+    0 8px 24px var(--shadow-warm);
+    position: relative;
+    overflow: hidden;
+  }
+   /* Subtle grain overlay */
+  .calc::before {
+    content: '';
+    position: absolute; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    background-size: 180px;
+    opacity: 0.4;
+    pointer-events: none;
+    border-radius: 24px;
+  }
+ /* Display */
+  .display {
+    background: var(--ink);
+    border-radius: 14px;
+    padding: 18px 20px 14px;
+    margin-bottom: 18px;
+    min-height: 96px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+    overflow: hidden;
+    box-shadow: inset 0 2px 8px rgba(0,0,0,0.4);
+  }
+  .display::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(200,137,58,0.3), transparent);
+  }
+    .expression {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    font-weight: 300;
+    color: rgba(200, 137, 58, 0.5);
+    text-align: right;
+    min-height: 16px;
+    letter-spacing: 0.05em;
+    transition: opacity 0.2s;
+  }
+  .result {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 48px;
+    font-weight: 300;
+    color: var(--warm-white);
+    text-align: right;
+    letter-spacing: -0.01em;
+    line-height: 1;
+    transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.2s;
+    transform-origin: right center;
+  }
+    .result.pop {
+    transform: scale(1.04);
+    color: var(--amber-light);
+  }
+    /* Grid */
+ #keys{
+  gap: 12px;
+  grid-template-columns: repeat(4,1fr);
+   display: grid;
+}
+  
+   /* Buttons */
+  button{
+    height: 62px;
+    width: 100%;
+    border: none;
+    border-radius: 12px;
+    font-family: 'DM Mono', monospace;
+    font-size: 15px;
+    font-weight: 400;
+    cursor: none;
+    outline: none;
+    position: relative;
+    overflow: hidden;
+    transition:
+    transform 0.1s ease,
+    box-shadow 0.15s ease,
+    background 0.15s ease;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+/* Function buttons (AC, +/-, %) */
+  .btn-fn {
+    background: #D5C9B8;
+    color: var(--ink-light);
+    box-shadow: 0 3px 0 #B5A898, 0 4px 8px rgba(0,0,0,0.08);
+    font-size: 13px;
+    letter-spacing: 0.02em;
+  }
+  .btn-fn:hover {
+    background: #DDD3C3;
+    box-shadow: 0 4px 0 #B5A898, 0 6px 12px rgba(0,0,0,0.1);
+    transform: translateY(-1px);
+  }
+  .btn-fn:active {
+    transform: translateY(2px) scale(0.96);
+    box-shadow: 0 1px 0 #B5A898;
+  }
+ /* Operator buttons */
+  .btn-op {
+    background: var(--amber);
+    color: var(--warm-white);
+    box-shadow: 0 3px 0 var(--amber-dim), 0 4px 12px rgba(200,137,58,0.3);
+    font-size: 18px;
+  }
+  .btn-op:hover {
+    background: var(--warm-white);
+    box-shadow: 0 4px 0 var(--amber-dim), 0 8px 18px rgba(200,137,58,0.4);
+    transform: translateY(-1px);
+    color: var(--amber-dim);
+  }
+  .btn-op:active {
+    transform: translateY(2px) scale(0.96);
+    box-shadow: 0 1px 0 var(--amber-dim);
+  }
+  /* Equals */
+  .btn-eq {
+    background: var(--rust);
+    color: var(--warm-white);
+    box-shadow: 0 3px 0 #5E2519, 0 4px 12px rgba(139,58,42,0.3);
+    font-size: 20px;
+  }
+  .btn-eq:hover {
+    background: #A04535;
+    box-shadow: 0 4px 0 #5E2519, 0 8px 18px rgba(139,58,42,0.4);
+    transform: translateY(-1px);
+  }
+  .btn-eq:active {
+    transform: translateY(2px) scale(0.96);
+    box-shadow: 0 1px 0 #5E2519;
+  }
+  /* Digit buttons */
+  .btn-digit {
+    background: #EDE4D5;
+    color: var(--ink);
+    box-shadow: 0 3px 0 #C8BA9E, 0 4px 8px rgba(0,0,0,0.1);
+  }
+  .btn-digit:hover {
+    background: #F0E8DA;
+    box-shadow: 0 4px 0 #C8BA9E, 0 6px 12px rgba(0,0,0,0.12);
+    transform: translateY(-1px);
+  }
+  .btn-digit:active {
+    transform: translateY(2px) scale(0.96);
+    box-shadow: 0 1px 0 #C8BA9E;
+  }
+  
+  /* Zero wide */
+  .btn-zero {
+    grid-column: span 2;
+    text-align: left;
+    padding-left: 22px;
+    font-size: 16px;
+    height: 50px; width: 150px ;
+  }
+
+/* Decorative serif numeral label */
+  .serif-label {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--ink-light);
+    opacity: 0.4;
+    text-align: center;
+    margin-top: 14px;
+    margin-right: -230px;
+   
+  }
+    </style>
+</head>
+<body>
+<div class="cursor" id="cursor"></div>
+
+<div class="wrapper">
+<span class="label">Calculator</span>
+<div class="calc">
+<div class="display">
+<div class="expression" id="expression"></div>
+<div class="result" id="result">0</div>
+</div>  
+<div class="grid">
+<!-- Row 1 --> 
+
+        <div id="keys">
+            <button onclick="cleardisplay()" class="btn-fn">AC</button>
+            <button onclick="deletedisplay()" class="btn-fn">DEl</button>
+            <button onclick="append('%')" class="btn-fn">%</button>
+            <button onclick="append('/')" class="btn-fn">/</button>
+
+            <!-- Row 2 --> 
+            <button onclick="append('7')"  class="btn-digit" >7</button>
+            <button onclick="append('8')" class="btn-digit">8</button>
+            <button onclick="append('9')" class="btn-digit">9</button>
+            <button onclick="append('*')" class="btn btn-op" >*</button>
+ 
+            <!-- Row 3 --> 
+            <button onclick="append('4')" class="btn-digit">4</button>
+            <button onclick="append('5')" class="btn-digit">5</button>
+            <button onclick="append('6')" class="btn-digit">6</button>
+            <button onclick="append('-')" class="btn btn-op">-</button>
+
+            <!-- Row 4 --> 
+            <button onclick="append('1')" class="btn-digit">1</button>
+            <button onclick="append('2')" class="btn-digit">2</button>
+            <button onclick="append('3')" class="btn-digit">3</button>
+            <button onclick="append('+')" class="btn btn-op">+</button>
+
+            <!-- Row 5 --> 
+            <button onclick="append('0')" class="btn btn-digit btn-zero">0</button>
+          
+            <button onclick="append('.')" class="btn-digit">.</button>
+            <button onclick="calculate('=')" class="btn btn-eq">=</button>
+
+            <p class="serif-label">made for you</p>
+        </div>
+    </div>
+</div>
+<script>
+
+  // Custom cursor
+  const cursor = document.getElementById('cursor');
+  document.addEventListener('mousemove', e => {
+    cursor.style.left = e.clientX + 'px';
+    cursor.style.top  = e.clientY + 'px';
+  });
+
+  // ── State ──
+  let expression = '';
+  let justEvaled = false;
+
+  const exprEl   = document.getElementById('expression');
+  const resultEl = document.getElementById('result');
+
+  // ── Pop animation ──
+  function pop() {
+    resultEl.classList.remove('pop');
+    void resultEl.offsetWidth;
+    resultEl.classList.add('pop');
+    setTimeout(() => resultEl.classList.remove('pop'), 200);
+  }
+
+  // ── Live preview ──
+  function livePreview() {
+    try {
+      const val = Function('"use strict"; return (' + expression + ')')();
+      if (isFinite(val)) {
+        resultEl.textContent = +parseFloat(val.toFixed(10)).toString();
+      }
+    } catch {
+      resultEl.textContent = expression || '0';
+    }
+  }
+
+  // ── Append digit / operator ──
+  function append(val) {
+    const ops = ['+', '-', '*', '/'];
+
+    if (justEvaled) {
+      // After =, chain with operator or start fresh
+      expression = ops.includes(val) ? resultEl.textContent + val : val;
+      justEvaled = false;
+    } else {
+      // Guard: no double dots in the same number segment
+      if (val === '.') {
+        const parts = expression.split(/[\+\-\*\/]/);
+        const last  = parts[parts.length - 1];
+        if (last.includes('.')) return;
+        if (last === '') expression += '0';
+      }
+      // Guard: replace trailing operator instead of doubling up
+      if (ops.includes(val) && ops.includes(expression.slice(-1))) {
+        expression = expression.slice(0, -1);
+      }
+      expression += val;
+    }
+
+    exprEl.textContent = expression;
+    livePreview();
+  }
+
+  // ── Equals ──
+  function calculate() {
+    if (!expression) return;
+    try {
+      const raw    = Function('"use strict"; return (' + expression + ')')();
+      const answer = isFinite(raw)
+        ? +parseFloat(raw.toFixed(10)).toString()
+        : 'Error';
+      exprEl.textContent   = expression + ' =';
+      resultEl.textContent = answer;
+      expression  = String(answer);
+      justEvaled  = true;
+      pop();
+    } catch {
+      resultEl.textContent = 'Error';
+      exprEl.textContent   = '';
+      expression  = '';
+      justEvaled  = false;
+    }
+  }
+
+  // ── Clear ──
+  function cleardisplay() {
+    expression = '';
+    justEvaled = false;
+    exprEl.textContent   = '';
+    resultEl.textContent = '0';
+  }
+
+  // ── Delete last character ──
+  function deletedisplay() {
+    if (justEvaled) { cleardisplay(); return; }
+    expression = expression.slice(0, -1);
+    exprEl.textContent = expression;
+    if (!expression) {
+      resultEl.textContent = '0';
+    } else {
+      livePreview();
+    }
+  }
+
+  // ── Percent ──
+  function appendPercent() {
+    if (!expression) return;
+    try {
+      const val  = Function('"use strict"; return (' + expression + ')')();
+      expression = String(val / 100);
+      exprEl.textContent   = expression;
+      resultEl.textContent = expression;
+      justEvaled = false;
+    } catch { /* ignore */ }
+  }
+
+
+  // ── Keyboard support ──
+  document.addEventListener('keydown', e => {
+    if (e.key >= '0' && e.key <= '9') append(e.key);
+    else if (e.key === '.')       append('.');
+    else if (e.key === '+')       append('+');
+    else if (e.key === '-')       append('-');
+    else if (e.key === '')       append('');
+    else if (e.key === '/') { e.preventDefault(); append('/'); }
+    else if (e.key === 'Enter' || e.key === '=') calculate();
+    else if (e.key === 'Backspace') deletedisplay();
+    else if (e.key === 'Escape')    cleardisplay();
+    else if (e.key === '%')         appendPercent();
+  });
+
+
+</script>
+</body>
+</html>
